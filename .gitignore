@@ -26,6 +26,15 @@ pip-log.txt
 .tox
 nosetests.xml
 
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
 # Translations
 *.mo
 
@@ -33,3 +42,7 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# generated css:
+
+bootstrap.css
