@@ -1,0 +1,282 @@
+//
+// Resume.less - customized stylesheet.
+// --------------------------------------------------
+
+body {
+  background: #d9d9d9 url(../i/bg.png) repeat;
+}
+
+[class^="cv-icon-"],
+[class*=" cv-icon-"] {
+  padding-left: 28px;
+  background: transparent url(../i/sections-big.png) no-repeat;
+}
+
+.cv-icon-awards {
+  background-position: 0 -1 * 80px;
+}
+
+.cv-icon-certifications {
+  background-position: 0 -2 * 80px;
+}
+
+.cv-icon-education {
+  background-position: 0 -4 * 80px;
+}
+
+.cv-icon-about {
+  background-position: 0 -5 * 80px;
+}
+
+.cv-icon-languages {
+  background-position: 0 -6 * 80px;
+}
+
+.cv-icon-patents {
+  background-position: 0 -8 * 80px;
+}
+
+.cv-icon-summary {
+  background-position: 0 -9 * 80px;
+}
+
+.cv-icon-publications {
+  background-position: 0 -10 * 80px;
+}
+
+.cv-icon-skills {
+  background-position: 0 -11 * 80px;
+}
+
+.cv-icon-experience {
+  background-position: 0 -13 * 80px;
+}
+
+#cv-affix {
+  width: 160px;
+  min-height: 20px;
+  padding: 8px 0;
+  margin-bottom: 20px;
+  border: none;
+  .box-shadow(inset 0 1px 1px rgba(0,0,0,.05));
+}
+
+#cv-affix-list {
+  background-color: transparent;
+  li {
+    text-align: right;
+    margin-top: 1px;
+    a {
+      color: @grayDarker;
+      &:hover {
+        color: @white;
+        text-shadow: none;
+        background-color: @linkColor;
+        i {
+          background-image: url("../i/glyphicons-halflings-white.png");
+        }
+      }
+    }
+  }
+  li.divider {
+    background-color: transparent;
+    border-bottom: 1px solid darken(@grayLighter, 20%);
+    margin-left: -15px;
+    margin-right: -15px;
+    margin-top: 5px;
+    margin-bottom: 6px;
+  }
+  li.active {
+    a {
+      color: @white;
+      background-color: @linkColor;
+      &:hover {
+        background-color: @linkColor;
+      }
+    }
+  }
+  li.divider {
+    //
+  }
+  a > i {
+    margin-left: 10px;
+  }
+}
+
+#cv-lang {
+  display: block;
+  position: absolute;
+  left: 143px;
+  top: -3px;
+  ul {
+    display: block;
+    margin: 0;
+    *width: 180px;
+    .border-radius(0px);
+    li {
+      text-align: left;
+    }
+  }
+}
+
+#body {
+  background-color: @white;
+  .box-shadow(0px 0px 20px 0px rgba(0,0,0,0.6));
+  padding: @baseLineHeight;
+  text-shadow: 0px 1px 0px rgba(0,0,0,0.1);
+  //rgba(255, 255, 255, 0.498039) 0px 1px 0px;
+  > h1 {
+    margin: 10px 0 20px 0;
+    font-size: @baseFontSize * 2;
+    text-align: center;
+    font-weight: normal;
+  }
+  > hr {
+    margin: 0;
+  }
+  section {
+    margin: 16px 0 32px 0;
+    h3 {
+      margin: 0;
+      padding-left: 48px;
+      line-height: 80px;
+      font-size: 24px;
+      font-weight: normal;
+    }
+    h5 {
+      margin: 16px 0;
+      font-size: 20px;
+      font-weight: normal;
+    }
+    p {
+      font-size: 16px;
+      font-weight: normal;
+      line-height: 28px;
+      img.cv-img {
+        float: right;
+        margin-left: 20px;
+      }
+    }
+    p.cv-small {
+      font-size: 12px;
+      line-height: 24px;
+      color: darken(@grayLighter, 20%);
+    }
+    div.cv-editing {
+      margin: 10px -20px;
+      padding: 10px 20px;
+      border-top: 1px solid darken(@grayLighter, 10%);
+      border-bottom: 1px solid darken(@grayLighter, 10%);
+      background-color: @grayLighter;
+      //#gradient > .vertical(@grayLighter, @white);
+      input {
+        margin: 10px 0;
+        width: 742px;
+      }
+      textarea {
+        margin: 10px 0;
+        width: 742px;
+        resize: none;
+      }
+      button {
+        margin: 0px 10px 10px 0px;
+      }
+    }
+  }
+}
+
+div.cv-editing-detail {
+  margin: 10px 0;
+  padding: 16px 0 0 16px;
+  border-top: 1px solid darken(@grayLighter, 10%);
+  border-bottom: 1px solid darken(@grayLighter, 10%);
+  background-color: @grayLighter; 
+}
+
+a.cv-edit {
+  line-height: 14px;
+  i {
+    vertical-align: baseline;
+    margin: auto 4px;
+    opacity: 0.3;
+  }
+  &:hover {
+    i {
+      opacity: 0.6;
+    }
+  }
+}
+
+.cv-detail-left {
+  width: 230px;
+  float: left;
+  margin: 0;
+  .cv-detail-img {
+    width: 200px;
+    height: 200px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.2);
+    div {
+      width: 200px;
+      height: 200px;
+      border: none;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+  }
+}
+
+.cv-detail-right {
+  width: 530px;
+  float: left;
+  > ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    > li {
+      padding: 6px 12px 6px 12px;
+      font-size: 20px;
+      font-weight: normal;
+      padding: 0;
+      margin: 0;
+      clear: both;
+      span {
+        display: block;
+        float: left;
+        width: 300px;
+        padding: 10px 0;
+        &:first-child {
+          color: darken(@grayLighter, 20%);
+          text-align: right;
+          padding-right: 20px;
+          width: 170px;
+        }
+      }
+    }
+  }
+}
+
+#footer {
+  margin: 0 -20px -20px -20px;
+  border-top: 1px solid darken(@grayLighter, 10%);
+  background-color: @grayLighter;
+  padding: @baseLineHeight;
+  div {
+    line-height: @baseFontSize * 2;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
