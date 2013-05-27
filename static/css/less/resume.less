@@ -162,26 +162,26 @@ body {
       line-height: 24px;
       color: darken(@grayLighter, 20%);
     }
-    div.cv-editing {
-      margin: 10px -20px;
-      padding: 10px 20px;
-      border-top: 1px solid darken(@grayLighter, 10%);
-      border-bottom: 1px solid darken(@grayLighter, 10%);
-      background-color: @grayLighter;
-      //#gradient > .vertical(@grayLighter, @white);
-      input {
-        margin: 10px 0;
-        width: 742px;
-      }
-      textarea {
-        margin: 10px 0;
-        width: 742px;
-        resize: none;
-      }
-      button {
-        margin: 0px 10px 10px 0px;
-      }
-    }
+  }
+}
+
+div.cv-editing {
+  margin: 10px -20px;
+  padding: 10px 20px;
+  border-top: 1px solid darken(@grayLighter, 10%);
+  border-bottom: 1px solid darken(@grayLighter, 10%);
+  background-color: @grayLighter;
+  input {
+    margin: 10px 0;
+    width: 742px;
+  }
+  textarea {
+    margin: 10px 0;
+    width: 742px;
+    resize: none;
+  }
+  button {
+    margin: 0px 10px 10px 0px;
   }
 }
 
@@ -242,20 +242,28 @@ a.cv-edit {
       padding: 0;
       margin: 0;
       clear: both;
-      span {
+      div.cv-label {
+        display: block;
+        float: left;
+        padding: 10px 0;
+        color: darken(@grayLighter, 20%);
+        text-align: right;
+        padding-right: 20px;
+        width: 170px;
+      }
+      div.cv-value {
         display: block;
         float: left;
         width: 300px;
         padding: 10px 0;
-        &:first-child {
-          color: darken(@grayLighter, 20%);
-          text-align: right;
-          padding-right: 20px;
-          width: 170px;
-        }
       }
     }
   }
+}
+
+label.cv-error {
+  cursor: default;
+  color: @errorText;
 }
 
 #footer {
