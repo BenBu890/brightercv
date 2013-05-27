@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Please Sign In - Brighter CV</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.css" />
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.md5.js"></script>
+    <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+var redirect = '{{ redirect }}';
+
+function show_error(msg) {
+    if (msg) {
+        $('#span-signin-error').text(msg);
+        $('#div-signin-error').show();
+    }
+}
+
+function ajax_signin(form) {
+    $('#md5-passwd').val($.md5($('#origin-passwd').val()));
+    return true;
+}
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="offset1 span10">
+                <div id="body">
+                    <div class="row">
+                        <div>BrighterCV.com</div>
+                    </div>
+                    <hr />
+                    <div class="row" style="margin-top:120px; margin-bottom:120px;">
+                        <div class="offset3 span4">
+                            <form action="/auth/signin" method="post" onsubmit="return ajax_signin(this)">
+                                <div id="div-signin-error" class="alert alert-error">
+                                    <span id="span-signin-error">Error</span>
+                                </div>
+                                <label class="control-label">Email:</label>
+                                <input type="text" id="input-email" name="email" maxlength="50" class="input-xlarge" value="{{ email }}" />
+                                <label class="control-label">Password:</label>
+                                <input type="password" id="origin-passwd" maxlength="50" class="input-xlarge" />
+                                <input type="hidden" id="md5-passwd" name="passwd" />
+                                <label class="checkbox">
+                                    <input type="checkbox" name="remember" value="True" />
+                                    Remember me
+                                </label>
+                                <button type="submit" class="btn btn-primary">Sign In</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="footer">
+                        <div>Brighter CV, for brighter job, for brighter day.</div>
+                        <div>Copyright&copy; 2013, by <a href="/">Michael Liao</a>.</div>
+                        <div><a href="/">http://www.brightercv.com</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
