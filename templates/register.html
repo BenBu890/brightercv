@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Register | Brighter CV</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.css" />
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/jquery.md5.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/brightercv.js"></script>
+    <script>
+function ajax_register() {
+    var passwd = $('#passwd').val();
+    if (passwd.length < 6) {
+        $.showError('Password must be at least 6 characters.');
+        return false;
+    }
+    $.showError('');
+    $('button[type=submit]').attr('disabled', 'disabled');
+    $.postJSON('/auth/register', {
+        'name': $('#name').val(),
+        'email': $('#email').val(),
+        'passwd': $.md5(passwd),
+    }, function() {
+        location.assign('/');
+    }, function(err) {
+        $.showError(err.message);
+    }, function() {
+        $('button[type=submit]').removeAttr('disabled');
+    });
+    return false;
+}
+    </script>
+</head>
+<body data-spy="scroll" data-target=".affix">
+    <div class="container">
+        <div class="row">
+            <div class="span2">
+                <div id="cv-affix" class="affix">
+                    <ul id="cv-affix-list" class="nav nav-list">
+                        <li class="nav-header">Brighter CV</li>
+                        <li><a href="/">Home <i class="icon-home"></i></a></li>
+                        <li class="active"><a href="javascript:void(0)">Register <i class="icon-user"></i></a></li>
+                        <li><a href="/auth/signin">Sign In <i class="icon-lock"></i></a></li>
+                        <li class="divider"></li>
+                        <li><a href="/help">Help <i class="icon-question-sign"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="span10">
+                <div id="body">
+                    <h1>Register New User</h1>
+                    <hr />
+                    <div class="row" style="margin: 50px 0">
+                        <div class="span5">
+                            <form name="register" action="/auth/register" class="form-horizontal" onsubmit="return ajax_register()">
+                                <div class="alert alert-error offset1 hide"></div>
+                                <div class="control-group">
+                                    <label class="control-label">Name</label>
+                                    <div class="controls">
+                                        <input type="text" id="name" maxlength="50" placeholder="Name" />
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label">Email</label>
+                                    <div class="controls">
+                                        <input type="text" id="email" maxlength="50" placeholder="Email" />
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label">Password</label>
+                                    <div class="controls">
+                                        <input type="password" id="passwd" maxlength="20" placeholder="Password" />
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <div class="controls">
+                                        <button type="submit" class="btn btn-primary">Register</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="span4">
+                            <div class="cv-left-hr" style="margin-left:20px; padding-left:20px;">
+                                Already has LinkedIn account?
+                            </div>
+                        </div>
+                    </div>
+                    <div id="footer">
+                        <div>Permernent resume link: <a href="#">http://www.brightercv.com/michaelliao</a></div>
+                        <div>Build brighter CV for brighter job, for brighter day. <a href="/">www.brightercv.com</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
