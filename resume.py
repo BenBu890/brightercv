@@ -32,6 +32,21 @@ def cv(uid):
     cv = get_default_cv(uid)
     return dict(cv=cv, user=ctx.user, target=target_user, editable=ctx.user and ctx.user.id==uid)
 
+@jsonresult
+@post('/resumes/update')
+def update_resume():
+    _check_user()
+    i = ctx.request.input(id='', title='')
+    if not i.id:
+        raise APIError('value', 'id', 'id is empty.')
+    title = i.title.strip()
+    if not title:
+        raise APIError('value', 'title', 'title is empty')
+    cv = get_default_cv(ctx.user.id)
+    _check_user_id(cv.user_id)
+    db.update('update resumes set title=?, version=version+1 where id=?', title, cv.id)
+    return dict(result=True)
+
 _SECTIONS = (
     (u'about', u'About', ),
     (u'summary', u'Summary', ),
@@ -79,7 +94,7 @@ def add_section():
     return dict(result=True)
 
 @jsonresult
-@post('sections/update')
+@post('/sections/update')
 def update_section():
     _check_user()
     i = ctx.request.input(id='', title='', description='')
@@ -99,15 +114,16 @@ def update_section():
 @post('/items/add')
 def add_item():
     _check_user()
-    i = ctx.request.input(section_id='', title='', description='')
+    i = ctx.request.input(section_id='', title='', subtitle='', description='')
     title = i.title.strip()
+    subtitle = i.subtitle.strip()
     description = i.description.strip()
     if not title:
         raise APIError('value', 'title', 'Title is empty')
     cv = get_default_cv(ctx.user.id)
     for s in cv.sections:
         if s.id==i.section_id:
-            db.insert('items', id=db.next_str(), user_id=ctx.user.id, resume_id=cv.id, section_id=s.id, display_order=len(s.items), title=title, description=description, picture='', version=0)
+            db.insert('items', id=db.next_str(), user_id=ctx.user.id, resume_id=cv.id, section_id=s.id, display_order=len(s.items), title=title, subtitle=subtitle, description=description, picture='', version=0)
             return dict(result=True)
     raise APIError('value', 'section_id', 'Invalid section id.')
 
@@ -115,16 +131,17 @@ def add_item():
 @post('/items/update')
 def update_item():
     _check_user()
-    i = ctx.request.input(id='', title='', description='')
+    i = ctx.request.input(id='', title='', subtitle='', description='')
     if not i.id:
         raise APIError('value', 'id', 'id is empty.')
     title = i.title.strip()
+    subtitle = i.subtitle.strip()
     description = i.description.strip()
     if not title:
         raise APIError('value', 'title', 'title is empty')
     item = db.select_one('select * from items where id=?', i.id)
     _check_user_id(item.user_id)
-    db.update('update items set title=?, description=?, version=version+1 where id=?', title, description, item.id)
+    db.update('update items set title=?, subtitle=?, description=?, version=version+1 where id=?', title, subtitle, description, item.id)
     db.update('update sections set version=version+1 where id=?', itme.section_id)
     db.update('update resumes set version=version+1 where id=?', itme.resume_id)
     return dict(result=True)
