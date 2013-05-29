@@ -143,11 +143,6 @@ body {
       font-size: 24px;
       font-weight: normal;
     }
-    h5 {
-      margin: 16px 0;
-      font-size: 20px;
-      font-weight: normal;
-    }
     p {
       font-size: 16px;
       font-weight: normal;
@@ -157,10 +152,21 @@ body {
         margin-left: 20px;
       }
     }
-    p.cv-small {
-      font-size: 12px;
-      line-height: 24px;
-      color: darken(@grayLighter, 20%);
+    div.cv-entry {
+      padding-bottom: 10px;
+      h5 {
+        margin: 16px 0;
+        font-size: 20px;
+        font-weight: normal;
+      }
+      p {
+        padding-left: 16px;
+      }
+      p.cv-subtitle {
+        font-size: 12px;
+        line-height: 24px;
+        color: darken(@grayLighter, 20%);
+      }
     }
   }
 }
@@ -261,13 +267,32 @@ a.cv-edit {
   }
 }
 
-label.cv-error {
+span.cv-error, label.cv-error {
   cursor: default;
   color: @errorText;
 }
 
+.cv-deleting {
+  background-color: @errorBackground;
+}
+
 .cv-left-hr {
   border-left: 1px solid darken(@grayLighter, 10%);
+}
+
+div.cv-home-section {
+  padding: 10px 20px;
+  h3 {
+    margin: 0;
+    line-height: 80px;
+    font-size: 24px;
+    font-weight: normal;
+  }
+  p {
+    font-size: 16px;
+    font-weight: normal;
+    line-height: 28px;
+  }
 }
 
 #footer {
@@ -280,15 +305,17 @@ label.cv-error {
   }
 }
 
+// icons:
 
+.icon-cv-about              { background-position: -168px 0; }
+.icon-cv-summary            { background-position: -264px 0; }
+.icon-cv-publications       { background-position: -48px  -48px; }
+.icon-cv-experience         { background-position: -72px  -48px; }
+.icon-cv-skills             { background-position: -360px -144px; }
+.icon-cv-languages          { background-position: -144px -48px; }
+.icon-cv-certifications     { background-position: -72px  -144px; }
+.icon-cv-education          { background-position: -96px  -72px; }
+.icon-cv-patents            { background-position: -432px 0; }
 
-
-
-
-
-
-
-
-
-
+.icon-orginazations         { background-position: -432px -144px; }
 
