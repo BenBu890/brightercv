@@ -2,15 +2,72 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Michael Liao | BrighterCV</title>
+    <title>{{ target.name }} | BrighterCV</title>
     <link rel="stylesheet" href="/static/css/bootstrap.css" />
+    <style>
+{% if not editable %}
+a.cv-edit {
+    display: none;
+}
+{% endif %}
+    </style>
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.md5.js"></script>
     <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/static/js/brightercv.js"></script>
     <script type="text/javascript">
 
-function add_section() {
+function add_item_callback(target_id, data) {
+    var html = '<div id="entry-ID" url="/entries/update" class="cv-entry">'
+             + '<h5><span class="cv-edit-input-1"></span> <a href="javascript:prepare_editing(\'IIT\', \'entry-ID\', \'ID\')" class="cv-edit"><i class="icon-pencil"></i></a> <a href="javascript:prepare_delete(\'entry-ID\', \'/entries/delete\', {\'id\':\'ID\'})" class="cv-edit"><i class="icon-trash"></i></a></h5>'
+             + '<p class="cv-subtitle"><span class="cv-edit-input-2"></span></p>'
+             + '<p><span class="cv-edit-input-3"></span></p></div>';
+    html = html.replace(/ID/g, data.id);
+    $('#' + target_id).before(html);
+    $('#entry-' + data.id + ' .cv-edit-input-1').text(data.title);
+    $('#entry-' + data.id + ' .cv-edit-input-2').text(data.subtitle);
+    $('#entry-' + data.id + ' .cv-edit-input-3').text(data.description);
+}
+
+function add_about_item_callback(target_id, data) {
+    var html = '<li id="entry-ID" url="/entries/update">'
+             + '<div class="cv-label"><span class="cv-edit-input-1"></span></div>'
+             + '<div class="cv-value"><span class="cv-edit-input-2"></span> <a href="javascript:prepare_editing(\'DD\', \'entry-ID\', \'ID\')" class="cv-edit"><i class="icon-pencil"></i></a> <a href="javascript:prepare_delete(\'entry-ID\', \'/entries/delete\', {\'id\':\'ID\'})" class="cv-edit"><i class="icon-trash"></i></a></div></li>';
+    html = html.replace(/ID/g, data.id);
+    $('#' + target_id).before(html);
+    $('#entry-' + data.id + ' .cv-edit-input-1').text(data.title);
+    $('#entry-' + data.id + ' .cv-edit-input-2').text(data.description);
+}
+
+function prepare_delete(dom_id, url, data) {
+    var dom_button = $('#modal-delete .btn-danger');
+    var dom_loading = $('#modal-delete .cv-loading');
+
+    dom_loading.hide();
+    dom_button.removeAttr('disabled');
+    dom_button.unbind('click');
+    dom_button.click(function() {
+        dom_button.attr('disabled', 'disabled');
+        do_delete(dom_id, url, data);
+    });
+    $('#modal-delete').modal('show');
+}
+
+function do_delete(dom_id, url, data) {
+    $.postJSON(url, data, function(result) {
+        $('#modal-delete').modal('hide');
+        var dom = $('#' + dom_id);
+        dom.addClass('cv-deleting').delay(600).slideUp(500, function() {
+            dom.remove();
+        });
+    }, function(err) {
+        var dom_loading = $('#modal-delete .cv-loading');
+        dom_loading.html('<span class="cv-error">' + err.message + '</span>');
+        dom_loading.show();
+    });
+}
+
+function prepare_add_section() {
     var dom_button = $('#modal-add-section .btn-primary');
     var dom_select = $('#modal-add-section .cv-select-sections');
     var dom_loading = $('#modal-add-section .cv-loading');
@@ -28,7 +85,9 @@ function add_section() {
         });
         dom_loading.hide();
         dom_select.html(opts.join('')).show();
-        dom_button.removeAttr('disabled');
+        if (list.length > 0) {
+            dom_button.removeAttr('disabled');
+        }
     }, function(err) {
         dom_loading.html('<span class="cv-error">' + err.message + '</span>');
     });
@@ -49,10 +108,6 @@ function do_add_section() {
     });
 }
 
-
-
-
-//------------------------------
 function enable_all() {
     for (var i=0; i<arguments.length; i++) {
         var a = arguments[i];
@@ -96,6 +151,10 @@ function prepare_editing(type, target_dom_id, id) {
     target_dom.after(templ_html);
     var editing_dom = target_dom.next();
     editing_dom.attr('id', next_id);
+    if (type=='DD') {
+        // bind dropdown menu:
+        $('#' + next_id + ' ul.dropdown-menu li a').click(function() { $('#' + next_id + ' .cv-editing-input-1').val($(this).text()); });
+    }
     target_dom.hide();
     // prepare edit:
     var value_doms = [];
@@ -131,6 +190,11 @@ function prepare_editing(type, target_dom_id, id) {
             if (target_dom.attr('ref')) {
                 $('#span-' + target_dom.attr('ref')).text(values[0]);
             }
+            // callback:
+            if (target_dom.attr('callback')) {
+                var fn = eval(target_dom.attr('callback'));
+                fn(target_dom_id, result);
+            }
             btn_cancel.trigger('click');
         }, function(err) {
             error_dom.text(err.message);
@@ -141,46 +205,6 @@ function prepare_editing(type, target_dom_id, id) {
     });
     btn_cancel.click(function() {
         $('#' + next_id).remove();
-        target_dom.show();
-        enable_edit_button(true);
-    });
-}
-
-function prepare_edit(type, section_id, target_id, value_selector) {
-    enable_edit_button(false);
-    var templ_html = $('#' + type + '-editing-template').html();
-    var target_dom = $('#' + target_id);
-    var value_dom = $('#' + target_id + ' ' + value_selector);
-    var value = value_dom.text();
-    target_dom.after(templ_html);
-    target_dom.hide();
-    // prepare edit:
-    var input_dom = $('#' + section_id + ' .cv-editing-input');
-    var error_dom = $('#' + section_id + ' label.cv-error');
-    var btn_ok = $('#' + section_id + ' button.btn-primary');
-    var btn_cancel = $('#' + section_id + ' button.btn-cancel');
-    input_dom.val(value);
-    // bind function:
-    btn_ok.click(function() {
-        error_dom.hide();
-        disable_all(btn_ok, btn_cancel);
-        var new_value = input_dom.val();
-        $.postJSON('/err.json', { 'id': target_id, 'value': new_value }, function(result) {
-            // update value:
-            value_dom.text(new_value);
-            // update h3:
-            if (target_id.substring(0, 3)=='h3-') {
-                $('#span-' + target_id.substring(3)).text()
-            }
-            btn_cancel.trigger('click');
-        }, function(error) {
-            error_dom.show();
-        }, function() {
-            enable_all(btn_ok, btn_cancel);
-        });
-    });
-    btn_cancel.click(function() {
-        $('#' + section_id + ' div.cv-editing').remove();
         target_dom.show();
         enable_edit_button(true);
     });
@@ -205,6 +229,22 @@ function prepare_edit(type, section_id, target_id, value_selector) {
         </div>
     </div>
     <!-- // modal -->
+    <!-- modal: delete -->
+    <div id="modal-delete" class="modal hide fade">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h3>Confirm Deletion</h3>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete this?</p>
+            <p class="cv-loading">Loading...</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger">Delete</button>
+            <button class="btn" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+    <!-- // modal -->
     <div class="container">
         <div class="row">
             <div class="span2">
@@ -213,21 +253,21 @@ function prepare_edit(type, section_id, target_id, value_selector) {
                     <ul id="cv-affix-list" class="nav nav-list">
                         <li class="nav-header">Brighter CV</li>
 {% for section in cv.sections %}
-                        <li><a href="#{{ section.kind }}"><span id="span-{{ section.kind }}">{{ section.title }}</span> <i class="icon-user"></i></a></li>
+                        <li><a href="#{{ section.kind }}"><span id="span-{{ section.kind }}">{{ section.title }}</span> <i class="icon-cv-{{ section.kind }}"></i></a></li>
 {% endfor %}
                         <li class="divider"></li>
-                        <li><a href="#summary">Summary <i class="icon-th-list"></i></a></li>
-                        <li><a href="#publications">Publications <i class="icon-book"></i></a></li>
-                        <li><a href="#experience">Experience <i class="icon-bookmark"></i></a></li>
-                        <li><a href="#languages">Languages <i class="icon-font"></i></a></li>
-                        <li><a href="#certifications">Certifications <i class="icon-certificate"></i></a></li>
-                        <li><a href="#education">Education <i class="icon-edit"></i></a></li>
-                        <li><a href="#">Organizations <i class="icon-briefcase"></i></a></li>
-                        <li><a href="#">Patents <i class="icon-cog"></i></a></li>
-                        <li class="divider"></li>
-                        <li><a href="javascript:add_section()">Add <i class="icon-plus"></i></a></li>
-                        <li><a href="javascript:print()">Print <i class="icon-print"></i></a></li>
-                        <li><a href="#">Sign Out <i class="icon-off"></i></a></li>
+{% if editable %}
+                        <li><a href="javascript:prepare_add_section()">Add <i class="icon-plus"></i></a></li>
+{% endif %}
+                        <li><a href="/print/{{ target.id }}">Print <i class="icon-print"></i></a></li>
+                        <li><a href="/">Home <i class="icon-home"></i></a></li>
+{% if user %}
+    {% if editable %}
+                        <li><a href="/auth/signout">Sign Out <i class="icon-off"></i></a></li>
+    {% else %}
+                        <li><a href="/cv/{{ user.id }}">My Resume <i class="icon-user"></i></a></li>
+    {% endif %}
+{% endif %}
                     </ul>
                 </div>
                 <!-- // affix list -->
@@ -268,46 +308,22 @@ function prepare_edit(type, section_id, target_id, value_selector) {
                     <hr />
 
 {% for section in cv.sections %}
-    {% if section.kind!='summary' %}
+    {% if section.style=='li' %}
                     <section id="{{ section.kind }}">
-                        <h3 id="h3-{{ section.kind }}" ref="{{ section.kind }}" url="/sections/update" class="cv-icon-{{ section.kind }}"><span class="cv-edit-input-1">{{ section.title|e }}</span> <a href="javascript:prepare_editing('I', 'h3-{{ section.kind }}', '{{ section.id }}')" class="cv-edit"><i class="icon-pencil"></i></a></h3>
-                    </section>
-    {% else %}
-
-
-                    <section id="{{ section.kind }}">
-                        <div id="h3-{{ section.kind }}" ref="{{ section.kind }}" url="/sections/update">
-                            <h3 class="cv-icon-{{ section.kind }}"><span class="cv-edit-input-1">{{ section.title|e }}</span> <a href="javascript:prepare_editing('IT', 'h3-{{ section.kind }}', '{{ section.id }}')" class="cv-edit"><i class="icon-pencil"></i></a></h3>
-                            <div id="desc-{{ section.kind }}">
-                                <p>
-                                    <span class="cv-edit-input-2">{{ section.description|e }}</span>
-                                    <a href="javascript:prepare_editing('IT', 'h3-{{ section.kind }}', '{{ section.id }}')" class="cv-edit"><i class="icon-pencil"></i></a>
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-    {% endif %}
-{% endfor %}
-
-                    <hr />
-
-                    <hr />
-                    <hr />
-                    <hr />
-                    <section id="about">
-                        <h3 class="cv-icon-about">About</h3>
+                        <h3 id="h3-{{ section.kind }}" ref="{{ section.kind }}" url="/sections/update" class="cv-icon-{{ section.kind }}"><span class="cv-edit-input-1">{{ section.title|e }}</span>  <a href="javascript:prepare_editing('I', 'h3-{{ section.kind }}', '{{ section.id }}')" class="cv-edit"><i class="icon-pencil"></i></a> <a href="javascript:prepare_delete('{{ section.kind }}', '/sections/delete', {'id':'{{ section.id }}'})" class="cv-edit"><i class="icon-trash"></i></a></h3>
                         <div class="row">
                             <div class="cv-detail-left">
                                 <div class="cv-detail-img">
-                                    <div style="background-image: url(http://ww3.sinaimg.cn/mw690/9b563bdcgw1e3wmi086nvj20hs0hsdm0.jpg)"><a href="#" class="cv-edit"><i class="icon-upload"></i></a></div>
+                                    <div style="background-image: url(http://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm&f=y&size=200)"><a href="#" class="cv-edit"><i class="icon-upload"></i></a></div>
                                 </div>
                             </div>
                             <div class="cv-detail-right">
                                 <ul>
-                                    <li id="D-editing-template">
+                                    <div id="DD-editing-template" class="hide">
+                                        <li>
                                         <div class="cv-editing-detail">
-                                            <label class="cv-error">Saving failed.</label>
-                                            <form name="cv-form" class="form-inline">
+                                            <label class="cv-error hide">Network error.</label>
+                                            <form name="cv-form" class="form-inline" onsubmit="return false;">
                                                 <div class="input-prepend">
                                                     <div class="btn-group">
                                                         <button class="btn dropdown-toggle" data-toggle="dropdown" style="width: 38px;"><i class="icon-chevron-down"></i></button>
@@ -323,120 +339,57 @@ function prepare_edit(type, section_id, target_id, value_selector) {
                                                             <li><a href="javascript:void(0)">Facebook</a></li>
                                                         </ul>
                                                     </div>
-                                                    <input type="text" style="width:120px;" class="cv-input-detail-label" value="" />
+                                                    <input name="title" type="text" style="width:120px;" class="cv-input-detail-label cv-editing-input-1" value="" />
                                                 </div>
-                                                <input type="text" style="width:180px;" class="cv-input-detail-value" value="" />
+                                                <input name="description" type="text" style="width:200px;" class="cv-input-detail-value cv-editing-input-2" value="" />
                                                 <button class="btn btn-primary cv-detail-btn-ok"><i class="icon-ok icon-white"></i></button>
-                                                <button class="btn cv-detail-btn-cancel"><i class="icon-remove"></i></button>
+                                                <button class="btn btn-cancel cv-detail-btn-cancel"><i class="icon-remove"></i></button>
                                             </form>
                                         </div>
+                                        </li>
+                                    </div>
+                                {% for entry in section.entries %}
+                                    <li id="entry-{{ entry.id }}" url="/entries/update">
+                                        <div class="cv-label"><span class="cv-edit-input-1">{{ entry.title|e }}</span></div>
+                                        <div class="cv-value"><span class="cv-edit-input-2">{{ entry.description|e }}</span> <a href="javascript:prepare_editing('DD', 'entry-{{ entry.id }}', '{{ entry.id }}')" class="cv-edit"><i class="icon-pencil"></i></a> <a href="javascript:prepare_delete('entry-{{ entry.id }}', '/entries/delete', {'id':'{{ entry.id }}'})" class="cv-edit"><i class="icon-trash"></i></a></div>
                                     </li>
-                                    <li id="detail-birth">
-                                        <div class="cv-label"><span class="value">Birth</span></div>
-                                        <div class="cv-value"><span class="value">14 February 1982</span> <a href="#" class="cv-edit"><i class="icon-pencil"></i></a></div>
-                                    </li>
-                                    <li>
-                                        <div class="cv-label">Birth</div>
-                                        <div class="cv-value"><span>14 February 1982</span> <a href="#" class="cv-edit"><i class="icon-pencil"></i></a></div>
-                                    </li>
-                                    <li id="detail-1">
-                                        <div class="cv-label">Birth</div>
-                                        <div class="cv-value"><span>14 February 1982</span> <a href="#" class="cv-edit"><i class="icon-pencil"></i></a></div>
-                                    </li>
-                                    <li>
-                                        <div class="cv-label">Birth</div>
-                                        <div class="cv-value"><span>14 February 1982</span> <a href="#" class="cv-edit"><i class="icon-pencil"></i></a></div>
-                                    </li>
-                                    <li>
+                                {% endfor %}
+                                    <li id="about-entry-add" url="/entries/add" callback="add_about_item_callback">
                                         <div class="cv-label"></div>
-                                        <div class="cv-value"><a href="javascript:add_personal()" class="cv-edit"><i class="icon-plus"></i></a></div>
+                                        <div class="cv-value"><a href="javascript:prepare_editing('DD', 'about-entry-add', '{{ section.id }}')" class="cv-edit"><i class="icon-plus"></i></a></div>
                                     </li>
                                 </ul>
                             </div>
                         </div>
                     </section>
-                    <section id="section-summary">
-                        <h3 id="h3-summary" class="cv-icon-summary"><span class="value">Summary</span> <a href="javascript:prepare_edit('input', 'section-summary', 'h3-summary', 'span.value')" class="cv-edit"><i class="icon-pencil"></i></a></h3>
-                        <div id="summary-text">
-                            <p><span class="value">Highly skilled in server-side development including SQL database, no-SQL database, search engine, messaging, distributed system, cloud computing, network protocols. Highly skilled in JavaEE with experience of Spring, Hibernate, Lucene, etc. Highly skilled in Python with experience of AppEngine, web.py, Cheetah, etc. Highly skilled in Ruby on Rails, C#, ASP.net and .Net framework.</span> <a href="javascript:prepare_edit('text', 'section-summary', 'summary-text', 'span.value')" class="cv-edit"><i class="icon-pencil"></i></a>
-
-                            </p>
+    {% elif section.style=='text' %}
+                    <section id="{{ section.kind }}">
+                        <div id="h3-{{ section.kind }}" ref="{{ section.kind }}" url="/sections/update">
+                            <h3 class="cv-icon-{{ section.kind }}"><span class="cv-edit-input-1">{{ section.title|e }}</span> <a href="javascript:prepare_editing('IT', 'h3-{{ section.kind }}', '{{ section.id }}')" class="cv-edit"><i class="icon-pencil"></i></a> <a href="javascript:prepare_delete('{{ section.kind }}', '/sections/delete', {'id':'{{ section.id }}'})" class="cv-edit"><i class="icon-trash"></i></a></h3>
+                            <div id="desc-{{ section.kind }}">
+                                <p class="cv-edit-input-2">{{ section.description|e }}</p>
+                            </div>
                         </div>
                     </section>
-                    <section id="publications">
-                        <h3 class="cv-icon-publications">Publications</h3>
-                        <h5>Spring</h5>
-                        <p class="cv-small">June, 2007</p>
-                        <p>
-                            <a href="#"><img class="cv-img img-polaroid" src="http://images.china-pub.com/ebook30001-35000/34820/zcover.jpg?2012-6-24%2018:46:56" /></a>
-                            Spring framework is rapidly becoming the standard for lightweight JavaEE development, and "Spring 2.0 Core Technology & Best Practices" provides a quick and practical way to learn this open source framework. You'll not only learn how to use Spring 2.0 components and APIs, but also how to build a rapid and robust web application with minimum code and elegant architecture. This book also covers many popular frameworks/components and how to integrate with Spring, including Hibernate, Struts, Velocity, Lucene, Quartz, Acegi, XFire, JavaMail, etc. In the end of the book, a full-stack Spring-based web application 'livebookstore' is provided for demonstration and can be downloaded free from http://code.google.com/p/livebookstore/
-                        </p>
-                        <h5>Spring</h5>
-                        <div class="cv-editing">
-                            <input type="text" name="cv-editing-text" value="Spring 2.0 Core Technology &amp; Best Practices" />
-                            <button class="btn btn-primary">Save</button> <button class="btn">Cancel</button>
+    {% else %}
+                    <section id="{{ section.kind }}">
+                        <h3 id="h3-{{ section.kind }}" ref="{{ section.kind }}" url="/sections/update" class="cv-icon-{{ section.kind }}"><span class="cv-edit-input-1">{{ section.title|e }}</span> <a href="javascript:prepare_editing('I', 'h3-{{ section.kind }}', '{{ section.id }}')" class="cv-edit"><i class="icon-pencil"></i></a> <a href="javascript:prepare_delete('{{ section.kind }}', '/sections/delete', {'id':'{{ section.id }}'})" class="cv-edit"><i class="icon-trash"></i></a></h3>
+            {% for entry in section.entries %}
+                        <div id="entry-{{ entry.id }}" url="/entries/update" class="cv-entry">
+                            <h5><span class="cv-edit-input-1">{{ entry.title|e }}</span> <a href="javascript:prepare_editing('IIT', 'entry-{{ entry.id }}', '{{ entry.id }}')" class="cv-edit"><i class="icon-pencil"></i></a> <a href="javascript:prepare_delete('entry-{{ entry.id }}', '/entries/delete', {'id':'{{ entry.id }}'})" class="cv-edit"><i class="icon-trash"></i></a></h5>
+                            <p class="cv-subtitle"><span class="cv-edit-input-2">{{ entry.subtitle|e }}</span></p>
+                            <p><span class="cv-edit-input-3">{{ entry.description|e }}</span></p>
                         </div>
-                        <div class="cv-editing">
-                            <textarea rows="5">Spring framework is rapidly becoming the standard for lightweight JavaEE development, and "Spring 2.0 Core Technology &amp; Best Practices" provides a quick and practical way to learn this open source framework. You'll not only learn how to use Spring 2.0 components and APIs, but also how to build a rapid and robust web application with minimum code and elegant architecture. This book also covers many popular frameworks/components and how to integrate with Spring, including Hibernate, Struts, Velocity, Lucene, Quartz, Acegi, XFire, JavaMail, etc.</textarea>
-                            <button class="btn btn-primary">Save</button> <button class="btn">Cancel</button>
+            {% endfor %}
+                        <div id="add-{{ section.kind }}" url="/entries/add" callback="add_item_callback">
+                            <a href="javascript:prepare_editing('IIT', 'add-{{ section.kind }}', '{{ section.id }}')" class="cv-edit"><i class="icon-plus"></i></a>
                         </div>
                     </section>
-                    <section id="experience">
-                        <h3 class="cv-icon-experience"><span class="value">Experience</span> <a href="javascript:void(0)" class="cv-edit"><i class="icon-pencil"></i></a> <a href="javascript:void(0)" class="cv-edit"><i class="icon-plus"></i></a></h3>
-                        <h5>Brightcove</h5>
-                        <p class="cv-small">Mar 2010 - Jan 2011</p>
-                        <p>Online video platform development.</p>
-                    </section>
-                    <section id="languages">
-                        <h3 class="cv-icon-languages">Languages</h3>
-                        <div>
-                            BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB
-                        </div>
-                    </section>
-                    <section id="certifications">
-                        <h3 class="cv-icon-certifications">Certifications</h3>
-                        <div>
-                            BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB
-                            BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB
-                        </div>
-                    </section>
-                    <section id="skills">
-                        <h3 class="cv-icon-skills">Skills</h3>
-                        <div>
-                            Java<br/>Python<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB
-                            BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB
-                        </div>
-                    </section>
-                    <section id="education">
-                        <h3 class="cv-icon-education">Education</h3>
-                        <div>Java<br/>Python<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB
-                            BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB</div>
-                        <h5>Brightcove</h5>
-                        <p class="cv-small">Mar 2010 - Jan 2011</p>
-                        <p>Online video platform development.</p>
-                        <h5>Brightcove</h5>
-                        <p class="cv-small">Mar 2010 - Jan 2011</p>
-                        <p>Online video platform development.</p>
-                    </section>
-                    <section id="awards">
-                        <h3 class="cv-icon-awards">Awards</h3>
-                        <h5>BBBBBB</h5>
-                        <p class="cv-small">Mar 2010 - Jan 2011</p>
-                        <p>Online video platform development.</p>
-                        <h5>XXX</h5>
-                        <p class="cv-small">Mar 2010 - Jan 2011</p>
-                        <p>Online video platform development.</p>
-                    </section>
-                    <section id="patents">
-                        <h3 class="cv-icon-patents">Patents</h3>
-                        <div>
-                            BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB
-                            BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB<br/>BB
-                        </div>
-                    </section>
+    {% endif %}
+{% endfor %}
                     <div id="footer">
-                        <div>Permernent link: <a href=".">http://www.brightercv.com/cv/{{ cv.id }}</a></div>
                         <div>Build brighter CV for brighter job, for brighter day. <a href="/">www.brightercv.com</a></div>
+                        <div>Find author on LinkedIn: <a target="_blank" href="http://www.linkedin.com/in/liaoxuefeng">http://www.linkedin.com/in/liaoxuefeng</a>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Home | Brighter CV</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.css" />
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/jquery.md5.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/brightercv.js"></script>
+    <script>
+    </script>
+</head>
+<body data-spy="scroll" data-target=".affix">
+    <div class="container">
+        <div class="row">
+            <div class="span2">
+                <div id="cv-affix" class="affix">
+                    <ul id="cv-affix-list" class="nav nav-list">
+                        <li class="nav-header">Brighter CV</li>
+                        <li class="active"><a href="/">Home <i class="icon-home"></i></a></li>
+{% if user %}
+                        <li><a href="/auth/signout">Sign Out <i class="icon-off"></i></a></li>
+{% else %}
+                        <li><a href="/auth/signin">Sign In <i class="icon-lock"></i></a></li>
+                        <li><a href="/auth/register">Register <i class="icon-user"></i></a></li>
+{% endif %}
+                        <li class="divider"></li>
+                        <li><a href="/help">Help <i class="icon-question-sign"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="span10">
+                <div id="body">
+                    <h1>Brighter CV</h1>
+                    <hr />
+                    <div class="row" style="margin: 20px 0">
+                        <div class="cv-home-section">
+                            <p>Are you boring with write CV in Microsoft Word? Brighter CV helps you build, print and send your brighter CV with simple 3 steps!</p>
+                        </div>
+                        <div class="cv-home-section">
+                            <h3>Build Brighter CV</h3>
+                            <p>Build brighter CV online, with cloud storage, instant editing.</p>
+                        </div>
+                        <div class="cv-home-section">
+                            <h3>Print Brighter CV</h3>
+                            <p>Print brighter CV in browser, no Microsoft Word needed.</p>
+                        </div>
+                        <div class="cv-home-section">
+                            <h3>Send Brighter CV</h3>
+                            <p>Send brighter CV to your employee directly, without email client.</p>
+                        </div>
+                        <div class="cv-home-section">
+                            <p><a href="{{ user and ('/cv/%s' % user.id) or '/auth/signin' }}" class="btn btn-large btn-success">Build Brighter CV for FREE!</a></p>
+                        </div>
+                    </div>
+                    <div id="footer">
+                        <div>Build brighter CV for brighter job, for brighter day. <a href="/">www.brightercv.com</a></div>
+                        <div>Find author on LinkedIn: <a target="_blank" href="http://www.linkedin.com/in/liaoxuefeng">http://www.linkedin.com/in/liaoxuefeng</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
