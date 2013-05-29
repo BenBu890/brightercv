@@ -46,3 +46,8 @@ Thumbs.db
 # generated css:
 
 bootstrap.css
+
+# product conf:
+
+conf_prod.py
+
